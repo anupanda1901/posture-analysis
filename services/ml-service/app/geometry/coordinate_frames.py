@@ -16,9 +16,19 @@ class CoordinateFrame(str, Enum):
     OBJECT = "O"
 
 
-# No scale/reprojection check is implemented in this phase (no calibrated depth,
-# known-size reference, stereo, or subject-specific calibration pipeline) - so
-# every CalibratedJointFrame this service emits MUST report scaleValidated=False.
-# Do not flip this to True without actually implementing one of those checks;
-# doing so would violate the core rule in docs/coordinate-frames.md.
-SCALE_VALIDATED_THIS_PHASE = False
+# Sentinel calibrationRef used when no scale-calibration-record exists for the
+# session. calibrated-joint-frame.calibrationRef is a required string field,
+# so this stands in for "no calibration" rather than leaving it empty.
+NO_SCALE_CALIBRATION_REF = "none/v0"
+
+
+def is_scale_validated(scale_calibration_ref: str | None) -> bool:
+    """True only when backend-api has resolved and passed a real
+    ScaleCalibrationRecord id for this session (see geometry/scale_calibration.py
+    - only the subject_specific method is implemented this phase, docs/adr/008).
+    ml-service has no database of its own; it never guesses this - the caller
+    (backend-api, via the FrameSubmission payload) is the one source of truth
+    for whether a session has been scale-calibrated. Passing None here must
+    always yield False - do not flip this without a real calibration record.
+    """
+    return scale_calibration_ref is not None

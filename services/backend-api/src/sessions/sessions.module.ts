@@ -1,11 +1,14 @@
 import { Module } from "@nestjs/common";
 import { PrismaService } from "../common/prisma.service";
+import { EventsModule } from "../events/events.module";
+import { MlClientModule } from "../ml-integration/ml-client.module";
 import { SafetyModule } from "../safety/safety.module";
+import { WsModule } from "../ws/ws.module";
 import { SessionsController } from "./sessions.controller";
 import { SessionsService } from "./sessions.service";
 
 @Module({
-  imports: [SafetyModule],
+  imports: [SafetyModule, EventsModule, MlClientModule, WsModule],
   controllers: [SessionsController],
   providers: [SessionsService, PrismaService],
   exports: [SessionsService],

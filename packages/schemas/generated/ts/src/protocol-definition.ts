@@ -39,6 +39,13 @@ export interface ProtocolDefinition {
        */
       toleranceDegrees: number;
       restSeconds: number;
+      /**
+       * Clinician-authored expected angle per joint for this exercise phase. toleranceDegrees is the allowed deviation FROM this target. Optional: an exercise without this field cannot drive a deviation-based cue - the policy engine falls back to no_action for it, never fabricating a target (see docs/adr/005-deterministic-policy-engine.md).
+       */
+      targetJointAngles?: {
+        jointName: string;
+        targetDegrees: number;
+      }[];
     },
     ...{
       exerciseId: string;
@@ -56,6 +63,13 @@ export interface ProtocolDefinition {
        */
       toleranceDegrees: number;
       restSeconds: number;
+      /**
+       * Clinician-authored expected angle per joint for this exercise phase. toleranceDegrees is the allowed deviation FROM this target. Optional: an exercise without this field cannot drive a deviation-based cue - the policy engine falls back to no_action for it, never fabricating a target (see docs/adr/005-deterministic-policy-engine.md).
+       */
+      targetJointAngles?: {
+        jointName: string;
+        targetDegrees: number;
+      }[];
     }[]
   ];
   contraindications: string[];

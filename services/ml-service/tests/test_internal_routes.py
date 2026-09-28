@@ -50,6 +50,8 @@ def test_no_person_image_round_trip_is_unsupported():
     assert "occlusion" in data["qualityGateFlag"]["reasons"]
     assert len(data["poseLandmarkFrame"]["landmarks"]) == 33
     assert all(lm["observationState"] == "occluded" for lm in data["poseLandmarkFrame"]["landmarks"])
+    # No observed landmarks -> zero computable angles -> no fabricated CalibratedJointFrame.
+    assert data["calibratedJointFrame"] is None
 
 
 def test_invalid_base64_is_rejected():

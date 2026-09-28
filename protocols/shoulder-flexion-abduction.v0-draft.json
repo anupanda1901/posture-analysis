@@ -14,7 +14,11 @@
       "phase": "ascend",
       "repRange": { "min": 5, "max": 10 },
       "toleranceDegrees": 15,
-      "restSeconds": 20
+      "restSeconds": 20,
+      "targetJointAngles": [
+        { "jointName": "leftShoulder", "targetDegrees": 150 },
+        { "jointName": "rightShoulder", "targetDegrees": 150 }
+      ]
     },
     {
       "exerciseId": "sfa-02",
@@ -22,7 +26,11 @@
       "phase": "ascend",
       "repRange": { "min": 5, "max": 10 },
       "toleranceDegrees": 15,
-      "restSeconds": 20
+      "restSeconds": 20,
+      "targetJointAngles": [
+        { "jointName": "leftShoulder", "targetDegrees": 150 },
+        { "jointName": "rightShoulder", "targetDegrees": 150 }
+      ]
     }
   ],
   "contraindications": [

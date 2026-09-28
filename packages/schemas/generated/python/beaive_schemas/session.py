@@ -48,6 +48,9 @@ class Session(BaseModel):
     deploymentContext: DeploymentContext
     consentRecordId: str = Field(..., description='Reference to a ConsentRecord.')
     retentionPolicy: RetentionPolicy
-    calibrationRef: str | None = None
+    calibrationRef: str | None = Field(
+        None,
+        description="References the session's current ScaleCalibrationRecord.scaleCalibrationId, if any. null means this session has never been scale-calibrated - ml-service must then report CalibratedJointFrame.scaleValidated=false (docs/coordinate-frames.md, docs/adr/008-scale-calibration-scope.md).",
+    )
     state: State
     createdAt: AwareDatetime

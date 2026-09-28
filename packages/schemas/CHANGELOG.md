@@ -29,3 +29,26 @@ All ten canonical records introduced at `version: "v0"`:
   `reviewedBy: null`.
 
 No breaking changes yet - this is the first cut.
+
+## v0 - Phase 2/3 additions (non-breaking)
+
+- `decision-event.evidence[].type` enum extended with `movement-phase-event`,
+  `exposure-event`, `object-detection-frame`, `scale-calibration-record`,
+  `sensor-reading`.
+- `protocol-definition.exercises[]` gained an **optional** `targetJointAngles`
+  array (clinician-authored target angle per joint). An exercise without it
+  cannot drive a deviation-based cue - the policy engine falls back to
+  `no_action`, never fabricating a target.
+- `camera-pose` gained a **required** `worldAnchorId` field - a new UUID must
+  be minted on every AR re-anchor; records under different IDs are not
+  metrically comparable.
+- New: `object-detection-frame` (generic 2D detections, no task-specific
+  ergonomic classification), `scale-calibration-record` (only
+  `subject_specific` implemented this phase), `exposure-event` (posture-bucket
+  valid-time tracking), `movement-phase-event` (`validated` hard-constrained
+  to `false` via `"const": false` - ST-GCN/TCN output, descriptive-only, never
+  cited by a safety-relevant decision), `sensor-reading` (optional,
+  non-safety-gating wearable input).
+
+See `docs/adr/005-deterministic-policy-engine.md` through
+`docs/adr/008-scale-calibration-scope.md` for the reasoning behind these.

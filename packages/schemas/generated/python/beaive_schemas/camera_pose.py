@@ -40,3 +40,7 @@ class CameraPose(BaseModel):
         ...,
         description='notAvailable/limited must gate any AR-anchored overlay and any claim that B-frame pose corresponds to a surveyed world location.',
     )
+    worldAnchorId: str = Field(
+        ...,
+        description="Identifies a locally-consistent AR world-tracking segment. A new value MUST be minted on re-anchor (trackingState recovering from notAvailable/limited, or anchorConfidence dropping below threshold then recovering) per TRD 2.1's re-anchor-and-segment rule. CalibratedJointFrame/ScaleCalibrationRecord produced under different worldAnchorId values must not be pooled as if metrically comparable.",
+    )

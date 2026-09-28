@@ -31,15 +31,30 @@ surveyed accuracy. This is why `calibrated-joint-frame.schema.json` requires a
 `scaleValidated` boolean and a `calibrationRef`, and why `session.schema.json`
 carries a `calibrationRef` at the session level.
 
+Only **approved subject-specific calibration** is implemented so far
+(`services/ml-service/app/geometry/scale_calibration.py`, ADR-008) — a
+clinician/patient-entered height combined with the observed ankle-to-nose
+landmark span. The other three methods (calibrated depth, known-size
+reference object, stereo/multi-view triangulation) remain unimplemented;
+`scaleValidated` is `false` for any session that hasn't completed a real
+subject-specific calibration, and stays `false` permanently for the other
+three methods until they get a real implementation.
+
 ## Camera setup and localization
 
 - **Stationary external camera mode**: requires a one-time camera-extrinsics
   calibration and a calibrated floor/work-surface reference. No continuous AR
   tracking is required, but calibration matters more than any visual overlay.
 - **Moving-phone AR mode**: requires continuous device tracking (`T_WC(t)` updated
-  every frame); this is deferred to a later phase (`apps/ios-client` in this pass is
-  capture/display only, no ARKit anchoring yet — see `docs/adr/004-ios-dtos-hand-kept.md`
-  and the plan's "explicitly deferred" list).
+  every frame). `apps/ios-client/Sources/Spatial/ARSessionController.swift` now wraps
+  `ARWorldTrackingConfiguration` and streams `camera-pose.schema.json` records
+  (`services/backend-api/src/sessions/sessions.controller.ts`'s
+  `POST /:id/camera-poses`), but the iOS code itself is **unverified** — no Swift
+  toolchain is available in this sandbox (see `docs/adr/004-ios-dtos-hand-kept.md`
+  and `apps/ios-client/README.md`). Server-side ingestion is tested. A device that
+  doesn't support `ARWorldTrackingConfiguration`, or whose tracking degrades, falls
+  into the first-class `TwoDFallbackBanner` mode rather than silently continuing
+  under a stale or fabricated anchor.
 - Do **not** use outdoor/geospatial anchors for desk-scale clinical measurement.
 - Track anchor confidence and drift (`camera-pose.schema.json` → `trackingState`,
   `anchorConfidence`); re-anchor and start a new time segment when localization

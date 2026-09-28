@@ -23,6 +23,11 @@ class RepRange(BaseModel):
     max: conint(ge=0)
 
 
+class TargetJointAngle(BaseModel):
+    jointName: str
+    targetDegrees: float
+
+
 class Exercise(BaseModel):
     exerciseId: str
     name: str
@@ -36,6 +41,10 @@ class Exercise(BaseModel):
         description='Allowed deviation before a cue becomes eligible; clinician-set, not a universal threshold.',
     )
     restSeconds: confloat(ge=0.0)
+    targetJointAngles: list[TargetJointAngle] | None = Field(
+        None,
+        description='Clinician-authored expected angle per joint for this exercise phase. toleranceDegrees is the allowed deviation FROM this target. Optional: an exercise without this field cannot drive a deviation-based cue - the policy engine falls back to no_action for it, never fabricating a target (see docs/adr/005-deterministic-policy-engine.md).',
+    )
 
 
 class ProtocolDefinition(BaseModel):

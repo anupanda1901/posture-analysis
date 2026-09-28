@@ -14,6 +14,11 @@ class Type(Enum):
     quality_gate_flag = 'quality-gate-flag'
     symptom_report = 'symptom-report'
     camera_pose = 'camera-pose'
+    movement_phase_event = 'movement-phase-event'
+    exposure_event = 'exposure-event'
+    object_detection_frame = 'object-detection-frame'
+    scale_calibration_record = 'scale-calibration-record'
+    sensor_reading = 'sensor-reading'
 
 
 class EvidenceItem(BaseModel):

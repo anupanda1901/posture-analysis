@@ -14,7 +14,11 @@
       "phase": "descend",
       "repRange": { "min": 3, "max": 8 },
       "toleranceDegrees": 12,
-      "restSeconds": 30
+      "restSeconds": 30,
+      "targetJointAngles": [
+        { "jointName": "leftKnee", "targetDegrees": 100 },
+        { "jointName": "rightKnee", "targetDegrees": 100 }
+      ]
     },
     {
       "exerciseId": "sts-02",
@@ -22,7 +26,11 @@
       "phase": "ascend",
       "repRange": { "min": 3, "max": 8 },
       "toleranceDegrees": 12,
-      "restSeconds": 30
+      "restSeconds": 30,
+      "targetJointAngles": [
+        { "jointName": "leftKnee", "targetDegrees": 170 },
+        { "jointName": "rightKnee", "targetDegrees": 170 }
+      ]
     }
   ],
   "contraindications": [

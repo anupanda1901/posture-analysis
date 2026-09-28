@@ -18,12 +18,32 @@ export interface DecisionEvent {
    */
   evidence: [
     {
-      type: "pose-landmark-frame" | "calibrated-joint-frame" | "quality-gate-flag" | "symptom-report" | "camera-pose";
+      type:
+        | "pose-landmark-frame"
+        | "calibrated-joint-frame"
+        | "quality-gate-flag"
+        | "symptom-report"
+        | "camera-pose"
+        | "movement-phase-event"
+        | "exposure-event"
+        | "object-detection-frame"
+        | "scale-calibration-record"
+        | "sensor-reading";
       refId: string;
       summary?: string;
     },
     ...{
-      type: "pose-landmark-frame" | "calibrated-joint-frame" | "quality-gate-flag" | "symptom-report" | "camera-pose";
+      type:
+        | "pose-landmark-frame"
+        | "calibrated-joint-frame"
+        | "quality-gate-flag"
+        | "symptom-report"
+        | "camera-pose"
+        | "movement-phase-event"
+        | "exposure-event"
+        | "object-detection-frame"
+        | "scale-calibration-record"
+        | "sensor-reading";
       refId: string;
       summary?: string;
     }[]

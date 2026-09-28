@@ -21,6 +21,10 @@ model Session {
   consentRecordId   String
   retentionPolicy   Json
   calibrationRef    String?
+  // Feeds subject-specific scale calibration (the only TRD-approved method
+  // implemented this phase - docs/adr/008-scale-calibration-scope.md). Set via
+  // POST /sessions/:id/height before calling POST /sessions/:id/scale-calibration.
+  subjectHeightMeters Float?
   state             String
   // Full XState persisted snapshot (actor.getPersistedSnapshot()), so the safety
   // FSM can be correctly rehydrated after a process restart via the officially
@@ -44,6 +48,21 @@ model Event {
   createdAt DateTime @default(now())
 
   @@index([sessionId, createdAt])
+}
+
+// Session-independent by design (docs/consent-and-retention.md): a subject
+// consents once and multiple sessions can reference the same consent record
+// via Session.consentRecordId. Not stored as an Event (Event.sessionId is
+// required, but consent logically precedes session creation).
+model ConsentRecord {
+  id                     String    @id @default(uuid())
+  subjectPseudoId        String
+  scopes                 Json
+  grantedAt              DateTime  @default(now())
+  revokedAt              DateTime?
+  withdrawalRequestedAt  DateTime?
+
+  @@index([subjectPseudoId])
 }
 
 model ProtocolVersion {

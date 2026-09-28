@@ -14,7 +14,11 @@
       "phase": "descend",
       "repRange": { "min": 3, "max": 8 },
       "toleranceDegrees": 10,
-      "restSeconds": 30
+      "restSeconds": 30,
+      "targetJointAngles": [
+        { "jointName": "leftKnee", "targetDegrees": 110 },
+        { "jointName": "rightKnee", "targetDegrees": 110 }
+      ]
     },
     {
       "exerciseId": "sq-02",
@@ -22,7 +26,11 @@
       "phase": "ascend",
       "repRange": { "min": 3, "max": 8 },
       "toleranceDegrees": 10,
-      "restSeconds": 30
+      "restSeconds": 30,
+      "targetJointAngles": [
+        { "jointName": "leftKnee", "targetDegrees": 170 },
+        { "jointName": "rightKnee", "targetDegrees": 170 }
+      ]
     }
   ],
   "contraindications": [

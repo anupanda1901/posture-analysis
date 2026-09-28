@@ -19,7 +19,10 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["pose-landmark-frame", "calibrated-joint-frame", "quality-gate-flag", "symptom-report", "camera-pose"]
+            "enum": [
+              "pose-landmark-frame", "calibrated-joint-frame", "quality-gate-flag", "symptom-report", "camera-pose",
+              "movement-phase-event", "exposure-event", "object-detection-frame", "scale-calibration-record", "sensor-reading"
+            ]
           },
           "refId": { "type": "string" },
           "summary": { "type": "string" }

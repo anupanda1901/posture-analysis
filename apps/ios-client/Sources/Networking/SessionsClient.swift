@@ -48,4 +48,34 @@ final class SessionsClient {
         struct Result: Decodable { let state: SafetyState }
         return try JSONDecoder().decode(Result.self, from: data).state
     }
+
+    /// Feeds subject-specific scale calibration (docs/adr/008) - call before submitScaleCalibrationFrame.
+    func setHeight(sessionId: String, subjectHeightMeters: Double) async throws {
+        var request = URLRequest(url: BackendConfig.baseURL.appendingPathComponent("sessions/\(sessionId)/height"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONEncoder().encode(["subjectHeightMeters": subjectHeightMeters])
+        _ = try await session.data(for: request)
+    }
+
+    /// Runs subject-specific scale calibration against a single frame. Throws
+    /// on 422 (ankle/nose not fully observed) - the caller should ask the
+    /// user to reposition and retry, never treat this as success.
+    func submitScaleCalibrationFrame(sessionId: String, frameId: String, imageData: Data) async throws {
+        var request = URLRequest(url: BackendConfig.baseURL.appendingPathComponent("sessions/\(sessionId)/scale-calibration"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONEncoder().encode([
+            "frameId": frameId,
+            "imageBase64": imageData.base64EncodedString(),
+        ])
+        let (_, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw ScaleCalibrationError.notObserved((response as? HTTPURLResponse)?.statusCode ?? -1)
+        }
+    }
+}
+
+enum ScaleCalibrationError: Error {
+    case notObserved(Int)
 }

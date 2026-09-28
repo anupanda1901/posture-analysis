@@ -95,3 +95,105 @@ test("protocol-definition: draft status forces clinicallyValidated=false and rev
     JSON.stringify(validate.errors)
   );
 });
+
+test("movement-phase-event: validated must be false, true is rejected", () => {
+  const validate = validatorFor("movement-phase-event");
+  const base = {
+    movementPhaseEventId: "m1", sessionId: "s1", exerciseId: "sts-01",
+    windowStartAt: "2026-01-01T00:00:00Z", windowEndAt: "2026-01-01T00:00:02Z",
+    modelArchitecture: "tcn", predictedPhase: "ascend", phaseConfidence: 0.5, repCountDelta: 1,
+    evidence: [{ type: "calibrated-joint-frame", refId: "cjf-1" }],
+    provenance: {
+      schemaVersion: "movement-phase-event/v0", modelVersion: "tcn-untrained/v0",
+      calibrationVersion: "none/v0", producedAt: "2026-01-01T00:00:00Z",
+    },
+  };
+
+  assert.equal(validate({ ...base, validated: true }), false, "validated=true must never be schema-valid in this phase");
+  assert.equal(validate({ ...base, validated: false }), true, JSON.stringify(validate.errors));
+});
+
+test("object-detection-frame: rejects a non-generic ergonomic label", () => {
+  const validate = validatorFor("object-detection-frame");
+  const base = {
+    detectionFrameId: "d1", sessionId: "s1", capturedAt: "2026-01-01T00:00:00Z", frame: "I",
+    provenance: {
+      schemaVersion: "object-detection-frame/v0", modelVersion: "torchvision-fasterrcnn/v0",
+      calibrationVersion: "none/v0", producedAt: "2026-01-01T00:00:00Z",
+    },
+  };
+
+  assert.equal(
+    validate({ ...base, detections: [{ label: "monitor", boundingBox: { xMin: 0, yMin: 0, xMax: 1, yMax: 1 }, confidence: 0.9 }] }),
+    false,
+    "task-specific ergonomic labels (e.g. 'monitor') are out of scope this phase - see ADR-006"
+  );
+  assert.equal(
+    validate({ ...base, detections: [{ label: "tv", boundingBox: { xMin: 0, yMin: 0, xMax: 1, yMax: 1 }, confidence: 0.9 }] }),
+    true,
+    JSON.stringify(validate.errors)
+  );
+});
+
+test("scale-calibration-record: only the four TRD-approved methods validate", () => {
+  const validate = validatorFor("scale-calibration-record");
+  const base = {
+    scaleCalibrationId: "sc1", sessionId: "s1", validatedAt: "2026-01-01T00:00:00Z",
+    referenceSourceFrameId: "fr1", scaleFactorMetersPerUnit: 1.7, uncertaintyMetersPerUnit: 0.05,
+    provenance: {
+      schemaVersion: "scale-calibration-record/v0", modelVersion: "n/a",
+      calibrationVersion: "none/v0", producedAt: "2026-01-01T00:00:00Z",
+    },
+  };
+
+  assert.equal(validate({ ...base, method: "subject_specific" }), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...base, method: "laser_rangefinder" }), false, "unapproved method must be rejected");
+});
+
+test("sensor-reading: heart_rate/bpm validates, an unsupported sensor type does not", () => {
+  const validate = validatorFor("sensor-reading");
+  const base = {
+    sensorReadingId: "sr1", sessionId: "s1", value: 72, recordedAt: "2026-01-01T00:00:00Z",
+    consentScopeRef: "consent-1",
+  };
+
+  assert.equal(validate({ ...base, sensorType: "heart_rate", unit: "bpm" }), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...base, sensorType: "blood_pressure", unit: "mmHg" }), false, "only heart_rate/bpm is in scope this phase");
+});
+
+test("exposure-event: validSeconds cannot be negative and evidence must be non-empty", () => {
+  const validate = validatorFor("exposure-event");
+  const base = {
+    exposureEventId: "ex1", sessionId: "s1", postureBucket: "neutral",
+    windowStartAt: "2026-01-01T00:00:00Z", windowEndAt: "2026-01-01T00:01:00Z",
+    totalWindowSeconds: 60,
+    provenance: {
+      schemaVersion: "exposure-event/v0", modelVersion: "posture-bucket-classifier/v0",
+      calibrationVersion: "none/v0", producedAt: "2026-01-01T00:00:00Z",
+    },
+  };
+
+  assert.equal(validate({ ...base, validSeconds: 45, evidence: [] }), false, "evidence must be non-empty");
+  assert.equal(validate({ ...base, validSeconds: -1, evidence: [{ type: "calibrated-joint-frame", refId: "cjf-1" }] }), false, "validSeconds cannot be negative");
+  assert.equal(validate({ ...base, validSeconds: 45, evidence: [{ type: "calibrated-joint-frame", refId: "cjf-1" }] }), true, JSON.stringify(validate.errors));
+});
+
+test("protocol-definition: targetJointAngles is optional and, when present, requires jointName+targetDegrees", () => {
+  const validate = validatorFor("protocol-definition");
+  const base = {
+    protocolId: "sit-to-stand", version: "v0-draft", name: "Sit to stand", status: "draft",
+    clinicallyValidated: false, reviewedBy: null,
+    targetPopulation: "adult rehab, low fall risk", deploymentContext: ["clinic_supervised", "home_rehab"],
+    contraindications: ["acute hip fracture"], symptomStopRules: ["stop on dizziness"],
+    createdAt: "2026-01-01T00:00:00Z",
+  };
+
+  const exerciseWithout = { exerciseId: "e1", name: "Sit to stand", phase: "ascend", repRange: { min: 3, max: 8 }, toleranceDegrees: 10, restSeconds: 30 };
+  assert.equal(validate({ ...base, exercises: [exerciseWithout] }), true, "an exercise without targetJointAngles must still validate (falls back to no_action)");
+
+  const exerciseWith = { ...exerciseWithout, targetJointAngles: [{ jointName: "leftKnee", targetDegrees: 170 }] };
+  assert.equal(validate({ ...base, exercises: [exerciseWith] }), true, JSON.stringify(validate.errors));
+
+  const exerciseMalformed = { ...exerciseWithout, targetJointAngles: [{ jointName: "leftKnee" }] };
+  assert.equal(validate({ ...base, exercises: [exerciseMalformed] }), false, "targetDegrees is required when targetJointAngles is present");
+});

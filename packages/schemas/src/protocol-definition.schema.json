@@ -45,7 +45,19 @@
             }
           },
           "toleranceDegrees": { "type": "number", "minimum": 0, "description": "Allowed deviation before a cue becomes eligible; clinician-set, not a universal threshold." },
-          "restSeconds": { "type": "number", "minimum": 0 }
+          "restSeconds": { "type": "number", "minimum": 0 },
+          "targetJointAngles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["jointName", "targetDegrees"],
+              "properties": {
+                "jointName": { "type": "string" },
+                "targetDegrees": { "type": "number" }
+              }
+            },
+            "description": "Clinician-authored expected angle per joint for this exercise phase. toleranceDegrees is the allowed deviation FROM this target. Optional: an exercise without this field cannot drive a deviation-based cue - the policy engine falls back to no_action for it, never fabricating a target (see docs/adr/005-deterministic-policy-engine.md)."
+          }
         }
       }
     },
