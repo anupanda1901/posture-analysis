@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.beaive.dev/camera-pose.schema.json",
+  "title": "CameraPose",
+  "description": "T_WC(t): device/camera localization within the local AR world frame, with anchor confidence and tracking state (TRD 2.1). Distinct from body-centered skeleton pose - do not conflate the two.",
+  "type": "object",
+  "version": "v0",
+  "required": ["cameraPoseId", "sessionId", "timestamp", "translation", "rotation", "anchorConfidence", "trackingState"],
+  "properties": {
+    "cameraPoseId": { "type": "string" },
+    "sessionId": { "type": "string" },
+    "timestamp": { "$ref": "common.schema.json#/$defs/isoTimestamp" },
+    "translation": { "$ref": "common.schema.json#/$defs/vector3" },
+    "rotation": { "$ref": "common.schema.json#/$defs/quaternion" },
+    "anchorConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "trackingState": {
+      "type": "string",
+      "enum": ["normal", "limited", "notAvailable"],
+      "description": "notAvailable/limited must gate any AR-anchored overlay and any claim that B-frame pose corresponds to a surveyed world location."
+    }
+  }
+}

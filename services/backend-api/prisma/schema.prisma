@@ -1,0 +1,58 @@
+// beAIve backend-api data model — Phase 0 / start-of-Phase-1 scaffolding.
+// Event is append-only by service-layer convention (EventsService exposes no
+// update/delete). DB-level REVOKE UPDATE/DELETE hardening is a named follow-up,
+// not enforced here (see docs/adr and the implementation plan's deferred list).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                String   @id @default(uuid())
+  subjectPseudoId   String
+  protocolId        String
+  protocolVersion   String
+  deploymentContext String
+  consentRecordId   String
+  retentionPolicy   Json
+  calibrationRef    String?
+  state             String
+  // Full XState persisted snapshot (actor.getPersistedSnapshot()), so the safety
+  // FSM can be correctly rehydrated after a process restart via the officially
+  // supported createActor(machine, { snapshot }) path - `state` alone is kept as
+  // a denormalized, human-readable/queryable mirror of snapshot.value.
+  safetySnapshot    Json?
+  createdAt         DateTime @default(now())
+
+  events Event[]
+
+  @@index([subjectPseudoId])
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id])
+  type      String
+  schemaId  String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model ProtocolVersion {
+  id          String   @id @default(uuid())
+  protocolKey String
+  version     String
+  definition  Json
+  status      String
+  createdAt   DateTime @default(now())
+
+  @@unique([protocolKey, version])
+}
