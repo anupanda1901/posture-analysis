@@ -63,15 +63,30 @@ architecture. Reusing the Phase 0 `RolesGuard`/`@Roles` scaffold instead of
 building a parallel mechanism keeps a single role-check code path.
 
 ## Follow-up
+
+**Done since this ADR was first written:** audit logging of clinician
+access - `AuditLogEntry` (Prisma), `AuditLogService`, `AuditLogInterceptor`
+(fires only on routes carrying `@AuditAction(...)`, and only after a
+successful response - a request `JwtAuthGuard`/`RolesGuard` already
+rejected is never logged as an access), and `GET /audit-log`
+(clinician-only, itself audited under `view_audit_log`) record who read
+which session and when for every route this ADR gates. `apps/clinician-web`
+has a corresponding read-only `/audit-log` page. A logging failure never
+blocks the read it's auditing - `AuditLogService.record()` catches and logs
+a warning rather than throwing.
+
+**Still open:**
 - Gate the Socket.IO gateway - requires first deciding how a subject's
   device authenticates to its own session (a session-scoped token minted at
   `POST /sessions` is the most likely shape, but that's a real design
   decision, not a one-line guard).
-- Add audit logging of clinician access (who viewed which subject's
-  session, when) - not implemented in this pass.
 - Token revocation / logout (`JwtAuthGuard` only checks expiry; there is no
   server-side revocation list) - acceptable for an 8h-lifetime token in a
   local/trusted deployment, not for anything wider.
 - Self-service account management (currently `seed-clinician.ts` only) and
   real least-privilege/tenant-isolation role modeling (PRD 2.4) remain
   out of scope, as `roles.guard.ts`'s own comment already noted.
+- The audit log itself has no retention/export policy and no protection
+  against a compromised clinician account deleting or forging entries
+  (there is no delete path today, but nothing stops one being added later
+  without also adding a reason to refuse it).

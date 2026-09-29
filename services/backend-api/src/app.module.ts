@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AuditLogModule } from "./audit/audit-log.module";
 import { AuthModule } from "./auth/auth.module";
 import { ConsentModule } from "./consent/consent.module";
 import { EventsModule } from "./events/events.module";
@@ -32,6 +33,7 @@ import { WsModule } from "./ws/ws.module";
     ConsentModule,
     SensorsModule,
     WsModule,
+    AuditLogModule,
   ],
 })
 export class AppModule {}

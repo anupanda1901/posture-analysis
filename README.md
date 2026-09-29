@@ -14,8 +14,9 @@ sample data.
   results returned by the server. **Unverified** — no Swift toolchain in this repo's
   build environment; see `apps/ios-client/README.md`.
 - `apps/clinician-web/` — read-only web dashboard for clinician review: session queue,
-  safety state, exposure summary, and the full event timeline, with live updates.
-  Its REST calls require clinician login (`docs/adr/010-clinician-authentication.md`);
+  safety state, exposure summary, the full event timeline (with live updates), and
+  an audit log of who has accessed what. Its REST calls require clinician login
+  (`docs/adr/010-clinician-authentication.md`, which also covers audit logging);
   live WebSocket updates and every device/subject-facing endpoint remain
   unauthenticated — see `docs/adr/009-clinician-web-trust-model.md` for what's
   covered and what isn't before pointing this at anything but local/synthetic data.

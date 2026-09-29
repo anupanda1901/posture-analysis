@@ -1,5 +1,7 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
+import { AuditAction } from "../audit/audit-action.decorator";
+import { AuditLogInterceptor } from "../audit/audit-log.interceptor";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { RolesGuard } from "../auth/roles.guard";
@@ -32,6 +34,8 @@ export class SessionsController {
    */
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("clinician")
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction("list_sessions")
   @Get()
   list(@Query("state") state?: string, @Query("limit") limit?: string) {
     const parsedLimit = limit ? Number(limit) : undefined;
@@ -43,6 +47,8 @@ export class SessionsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("clinician")
+  @UseInterceptors(AuditLogInterceptor)
+  @AuditAction("view_session")
   @Get(":id")
   get(@Param("id") id: string) {
     return this.sessions.get(id);

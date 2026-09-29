@@ -83,3 +83,13 @@ export interface MovementPhaseEventPayload {
 }
 
 export type ExposureSummary = Record<string, { validSeconds: number; totalWindowSeconds: number }>;
+
+/** Prisma `AuditLogEntry` model (docs/adr/010-clinician-authentication.md's named follow-up). */
+export interface AuditLogEntryRecord {
+  id: string;
+  clinicianId: string;
+  clinicianUsername: string;
+  action: string;
+  sessionId: string | null;
+  occurredAt: string;
+}

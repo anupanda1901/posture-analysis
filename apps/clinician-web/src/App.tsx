@@ -1,10 +1,22 @@
-import { Route, Routes } from "react-router-dom";
-import { AuthProvider } from "./auth/AuthContext";
+import { Link, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import { LogoutButton } from "./components/LogoutButton";
+import { AuditLogPage } from "./pages/AuditLogPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SessionDetailPage } from "./pages/SessionDetailPage";
 import { SessionQueuePage } from "./pages/SessionQueuePage";
+
+function HeaderNav() {
+  const { token } = useAuth();
+  if (!token) return null;
+  return (
+    <nav className="app-shell__nav">
+      <Link to="/">Sessions</Link>
+      <Link to="/audit-log">Audit log</Link>
+    </nav>
+  );
+}
 
 /**
  * Clinician review surface for beAIve (TRD's "clinician review" requirement -
@@ -22,6 +34,7 @@ export function App() {
       <div className="app-shell">
         <header className="app-shell__header">
           <h1 className="app-shell__title">beAIve clinician review</h1>
+          <HeaderNav />
           <LogoutButton />
         </header>
         <main className="app-shell__main">
@@ -40,6 +53,14 @@ export function App() {
               element={
                 <RequireAuth>
                   <SessionDetailPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/audit-log"
+              element={
+                <RequireAuth>
+                  <AuditLogPage />
                 </RequireAuth>
               }
             />

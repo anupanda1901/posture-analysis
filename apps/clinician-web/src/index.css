@@ -41,6 +41,18 @@ body {
   margin: 0;
 }
 
+.app-shell__nav {
+  display: flex;
+  gap: 16px;
+  margin-right: auto;
+  margin-left: 24px;
+  font-size: 0.85rem;
+}
+
+.app-shell__nav a {
+  color: var(--text);
+}
+
 .logout-button {
   border: 1px solid var(--border);
   background: transparent;

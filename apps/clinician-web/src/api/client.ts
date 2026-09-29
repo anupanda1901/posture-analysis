@@ -1,6 +1,6 @@
 import { clearToken, getToken } from "../auth/tokenStore";
 import { BACKEND_API_URL } from "./config";
-import type { EventRecord, ExposureSummary, SessionRecord } from "./types";
+import type { AuditLogEntryRecord, EventRecord, ExposureSummary, SessionRecord } from "./types";
 
 class UnauthorizedError extends Error {
   constructor() {
@@ -57,4 +57,10 @@ export function listEvents(sessionId: string): Promise<EventRecord[]> {
 
 export function getExposureSummary(sessionId: string): Promise<ExposureSummary> {
   return getJson<ExposureSummary>(`/sessions/${sessionId}/exposure/summary`);
+}
+
+/** GET /audit-log - who has looked at what (docs/adr/010-clinician-authentication.md). Clinician-only. */
+export function listAuditLog(limit?: number): Promise<AuditLogEntryRecord[]> {
+  const query = limit ? `?limit=${limit}` : "";
+  return getJson<AuditLogEntryRecord[]>(`/audit-log${query}`);
 }

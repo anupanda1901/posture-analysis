@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { clearToken, setToken } from "../auth/tokenStore";
-import { getExposureSummary, getSession, listEvents, listSessions, login } from "./client";
+import { getExposureSummary, getSession, listAuditLog, listEvents, listSessions, login } from "./client";
 
 function mockFetchOnce(body: unknown, ok = true, status = 200) {
   vi.stubGlobal(
@@ -89,5 +89,17 @@ describe("api client", () => {
   it("login surfaces an invalid-credentials message on 401", async () => {
     mockFetchOnce({}, false, 401);
     await expect(login("drchen", "wrong")).rejects.toThrow(/invalid username or password/i);
+  });
+
+  it("listAuditLog hits GET /audit-log with no query when no limit is given", async () => {
+    mockFetchOnce([]);
+    await listAuditLog();
+    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/audit-log", { headers: {} });
+  });
+
+  it("listAuditLog passes a limit as a query param", async () => {
+    mockFetchOnce([]);
+    await listAuditLog(50);
+    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/audit-log?limit=50", { headers: {} });
   });
 });

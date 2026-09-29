@@ -1,9 +1,10 @@
 # apps/clinician-web
 
 A read-only clinician review dashboard for beAIve sessions: a session queue
-(filterable by safety-FSM state) and a session detail view (safety state,
-scale-calibration status, exposure summary, and the full event timeline),
-with live updates over the same Socket.IO gateway `apps/ios-client` uses.
+(filterable by safety-FSM state), a session detail view (safety state,
+scale-calibration status, exposure summary, and the full event timeline)
+with live updates over the same Socket.IO gateway `apps/ios-client` uses,
+and an audit log of who has looked at what.
 
 This fills a gap that was explicitly deferred in the Phase 2/3 plan: the
 exposure/decision/symptom data services/backend-api already computes had no
@@ -56,7 +57,9 @@ VITE_BACKEND_API_URL=http://localhost:3000
   `EventTimeline` (renders the append-only event log; every description is
   derived directly from the stored payload).
 - `src/pages/` - `SessionQueuePage` (the review queue), `SessionDetailPage`
-  (per-session view with live updates).
+  (per-session view with live updates), `AuditLogPage` (who read what,
+  when - `docs/adr/010-clinician-authentication.md`'s named follow-up,
+  now implemented).
 
 ## Testing
 

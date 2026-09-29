@@ -87,3 +87,21 @@ model Clinician {
   role         String   @default("clinician")
   createdAt    DateTime @default(now())
 }
+
+// Who looked at which subject's data, and when (docs/adr/010's named
+// follow-up). Append-only by service-layer convention, same as Event -
+// AuditLogService exposes no update/delete. Deliberately its own table
+// rather than an Event row: this is a record of *access*, not a domain
+// record validated against packages/schemas, and it has no sessionId
+// requirement (e.g. GET /sessions itself touches no single session).
+model AuditLogEntry {
+  id                String   @id @default(uuid())
+  clinicianId       String
+  clinicianUsername String
+  action            String
+  sessionId         String?
+  occurredAt        DateTime @default(now())
+
+  @@index([sessionId, occurredAt])
+  @@index([clinicianId, occurredAt])
+}
