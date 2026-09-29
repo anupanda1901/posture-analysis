@@ -84,6 +84,25 @@ export interface MovementPhaseEventPayload {
 
 export type ExposureSummary = Record<string, { validSeconds: number; totalWindowSeconds: number }>;
 
+/** adverse-event-record.schema.json - see its own doc comment for why this is distinct from SymptomReport. */
+export interface AdverseEventRecord {
+  adverseEventRecordId: string;
+  sessionId: string | null;
+  subjectPseudoId: string;
+  reportedByClinicianId: string;
+  relatedSymptomReportId: string | null;
+  onsetAt: string;
+  reportedAt: string;
+  description: string;
+  severity: "mild" | "moderate" | "severe";
+  serious: boolean;
+  causality: "unrelated" | "unlikely" | "possible" | "probable" | "definite";
+  outcome: "resolved" | "resolving" | "not_resolved" | "resolved_with_sequelae" | "fatal" | "unknown";
+  actionTaken: string;
+  followUpRequired: boolean;
+  reportedToEthicsBoardAt: string | null;
+}
+
 /** Prisma `AuditLogEntry` model (docs/adr/010-clinician-authentication.md's named follow-up). */
 export interface AuditLogEntryRecord {
   id: string;
@@ -92,4 +111,23 @@ export interface AuditLogEntryRecord {
   action: string;
   sessionId: string | null;
   occurredAt: string;
+}
+
+/**
+ * services/backend-api/src/pilot-metrics/pilot-metrics.service.ts - a rate is
+ * `null`, never 0, when its denominator is 0 (no data yet is not the same as
+ * a measured zero rate). docs/phase4/safety-monitoring-plan.md.
+ */
+export interface PilotMetricsSummary {
+  totalSessions: number;
+  sessionsByState: Record<string, number>;
+  qualityGate: { totalFlags: number; unsupportedCount: number; unsupportedRate: number | null };
+  decisions: {
+    totalDecisions: number;
+    byAction: Record<string, number>;
+    cueRate: number | null;
+    escalateReviewRate: number | null;
+  };
+  symptomReports: { totalSymptomReports: number; ratePerSession: number | null };
+  adverseEvents: { totalAdverseEvents: number; seriousAdverseEvents: number; ratePerSession: number | null };
 }

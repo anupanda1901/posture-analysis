@@ -1,5 +1,6 @@
 /* eslint-disable */
 // DO NOT EDIT BY HAND. Run `npm run schemas:generate` to regenerate.
+export * from "./adverse-event-record";
 export * from "./calibrated-joint-frame";
 export * from "./camera-intrinsics";
 export * from "./camera-pose";

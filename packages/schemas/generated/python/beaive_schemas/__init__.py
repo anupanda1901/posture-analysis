@@ -1,4 +1,5 @@
 # DO NOT EDIT BY HAND. Run `npm run schemas:generate` to regenerate.
+from .adverse_event_record import AdverseEventRecord
 from .calibrated_joint_frame import CalibratedJointFrame
 from .camera_intrinsics import CameraIntrinsics
 from .camera_pose import CameraPose

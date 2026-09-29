@@ -105,3 +105,33 @@ model AuditLogEntry {
   @@index([sessionId, occurredAt])
   @@index([clinicianId, occurredAt])
 }
+
+// Regulatory-grade clinical-trial adverse event documentation
+// (packages/schemas/src/adverse-event-record.schema.json; docs/phase4/,
+// ADR-011). Deliberately its own table, not an Event row: sessionId is
+// nullable here (an AE noticed at a follow-up visit may trace to no
+// specific session), which the Event table's required FK can't represent -
+// same rationale as ConsentRecord above. Append-only by service-layer
+// convention - AdverseEventsService exposes no update/delete; a correction
+// is a new record referencing the old one, same as Event.
+model AdverseEvent {
+  id                      String    @id @default(uuid())
+  sessionId               String?
+  subjectPseudoId         String
+  reportedByClinicianId   String
+  relatedSymptomReportId  String?
+  onsetAt                 DateTime
+  reportedAt              DateTime  @default(now())
+  description             String
+  severity                String
+  serious                 Boolean
+  causality               String
+  outcome                 String
+  actionTaken             String
+  followUpRequired        Boolean   @default(false)
+  reportedToEthicsBoardAt DateTime?
+
+  @@index([subjectPseudoId, reportedAt])
+  @@index([sessionId])
+  @@index([serious, reportedAt])
+}

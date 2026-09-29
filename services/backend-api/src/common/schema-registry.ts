@@ -6,6 +6,7 @@ import addFormats from "ajv-formats";
 // them once and exposes a validator per record type, keyed by the schema file
 // name (matches DecisionEvent.evidence[].type and QualityGateFlag/Event.schemaId
 // naming convention: "<name>/v0").
+import adverseEventRecord from "../../../../packages/schemas/src/adverse-event-record.schema.json";
 import cameraIntrinsics from "../../../../packages/schemas/src/camera-intrinsics.schema.json";
 import cameraPose from "../../../../packages/schemas/src/camera-pose.schema.json";
 import calibratedJointFrame from "../../../../packages/schemas/src/calibrated-joint-frame.schema.json";
@@ -28,6 +29,7 @@ addFormats(ajv);
 ajv.addSchema(common as unknown as object);
 
 const SCHEMAS: Record<string, object> = {
+  "adverse-event-record": adverseEventRecord,
   "camera-intrinsics": cameraIntrinsics,
   "camera-pose": cameraPose,
   "calibrated-joint-frame": calibratedJointFrame,

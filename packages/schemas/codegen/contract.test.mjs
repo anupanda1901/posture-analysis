@@ -197,3 +197,21 @@ test("protocol-definition: targetJointAngles is optional and, when present, requ
   const exerciseMalformed = { ...exerciseWithout, targetJointAngles: [{ jointName: "leftKnee" }] };
   assert.equal(validate({ ...base, exercises: [exerciseMalformed] }), false, "targetDegrees is required when targetJointAngles is present");
 });
+
+test("adverse-event-record: requires the clinical-trial fields and rejects an unapproved causality/outcome value", () => {
+  const validate = validatorFor("adverse-event-record");
+  const base = {
+    adverseEventRecordId: "ae1", subjectPseudoId: "subj-1", reportedByClinicianId: "clin-1",
+    onsetAt: "2026-01-01T00:00:00Z", reportedAt: "2026-01-01T01:00:00Z",
+    description: "Subject reported dizziness during sit-to-stand, resolved after rest.",
+    severity: "moderate", serious: false, actionTaken: "session_paused",
+  };
+
+  assert.equal(validate({ ...base, causality: "possible", outcome: "resolved" }), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...base, causality: "made_up", outcome: "resolved" }), false, "an unapproved causality value must be rejected");
+  assert.equal(validate({ ...base, causality: "possible", outcome: "made_up" }), false, "an unapproved outcome value must be rejected");
+
+  const missingSeverity = { ...base, causality: "possible", outcome: "resolved" };
+  delete missingSeverity.severity;
+  assert.equal(validate(missingSeverity), false, "severity is required");
+});

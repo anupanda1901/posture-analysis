@@ -1,11 +1,17 @@
 # beAIve Spatial Posturology Platform
 
 Clinician-supervised posture/movement assessment and exercise-feedback platform.
-This repository is at **Phase 0 (claim/protocol/schema/governance scaffolding)** and the
-**start of Phase 1 (instrumented baseline pipeline)** of the implementation plan in
-`docs/`. Nothing in this repository is clinically validated. See
-`docs/claims-and-scope.md` before writing any user-facing copy, protocol content, or
-sample data.
+This repository has built the full engineering scaffolding for PRD Phases 0–3
+(claims/schema/governance, instrumented pipeline, spatial/ergonomic fusion,
+temporal intelligence & safety), plus everything in Phases 4 (supervised
+clinical pilot) and 5 (regulatory submission) that a coding session can
+actually build: real, tested pilot-safety and research-export software, and
+a full documentation set (`docs/phase4/`, `docs/regulatory/`) — see
+`docs/adr/011-phase4-5-readiness-scaffolding-scope.md` for exactly what's
+built vs. what remains irreducibly external (real patients, ethics approval,
+regulatory clearance). **Nothing in this repository is clinically validated
+or regulatory-cleared.** See `docs/claims-and-scope.md` before writing any
+user-facing copy, protocol content, or sample data.
 
 ## Architecture at a glance
 
@@ -14,12 +20,14 @@ sample data.
   results returned by the server. **Unverified** — no Swift toolchain in this repo's
   build environment; see `apps/ios-client/README.md`.
 - `apps/clinician-web/` — read-only web dashboard for clinician review: session queue,
-  safety state, exposure summary, the full event timeline (with live updates), and
-  an audit log of who has accessed what. Its REST calls require clinician login
-  (`docs/adr/010-clinician-authentication.md`, which also covers audit logging);
-  live WebSocket updates and every device/subject-facing endpoint remain
-  unauthenticated — see `docs/adr/009-clinician-web-trust-model.md` for what's
-  covered and what isn't before pointing this at anything but local/synthetic data.
+  safety state, exposure summary, the full event timeline (with live updates), an
+  audit log of who has accessed what, aggregate pilot safety-monitoring metrics, and
+  clinical-trial adverse event documentation (read-only; creation is API-only). Its
+  REST calls require clinician login (`docs/adr/010-clinician-authentication.md`,
+  which also covers audit logging); live WebSocket updates and every device/
+  subject-facing endpoint remain unauthenticated — see
+  `docs/adr/009-clinician-web-trust-model.md` for what's covered and what isn't
+  before pointing this at anything but local/synthetic data.
 - `services/backend-api/` — NestJS service owning session lifecycle, the protocol/plan
   store, the append-only event log, the deterministic safety/policy engine (never
   gated by unvalidated ML output — `docs/adr/005-deterministic-policy-engine.md`), and
@@ -33,7 +41,12 @@ sample data.
   "draft"` / `"clinicallyValidated": false` pending real clinical-lead sign-off.
 - `docs/` — governance and traceability documents: claims policy, hazard analysis,
   consent/retention design, coordinate-frame reference, intended-use matrix,
-  traceability matrix, architecture decision records.
+  traceability matrix, architecture decision records; `docs/phase4/` (clinical
+  pilot readiness — investigation plan, statistical analysis plan, safety
+  monitoring plan, data management plan, consent template, ethics checklist)
+  and `docs/regulatory/` (Phase 5 readiness — ISO 14971-structured risk file,
+  IEC 62304/62366 mappings, cybersecurity documentation, V&V report, device
+  classification analysis, labeling draft, SBOMs).
 - `infra/docker-compose.yml` — local dev orchestration (Postgres + backend-api +
   ml-service + a placeholder Redis container, see `docs/adr/003-frame-transport.md`).
 
@@ -93,12 +106,17 @@ substitute for the manual review the doc describes.
 
 ## What is deliberately not here yet
 
-Authentication/authorization on backend-api or `apps/clinician-web`
-(`docs/adr/009-clinician-web-trust-model.md`); 3 of 4 TRD scale-calibration
-methods (only `subject_specific` is implemented — `docs/adr/008`); a trained
-ST-GCN/TCN checkpoint (the models run, but on random weights — never safety-
-relevant, `docs/adr/005`); task-specific object/workstation classification;
-real multi-device benchmarking; FHIR mapping; message-bus-backed frame
-streaming; and any clinical trial or regulatory submission material. See the
-"Explicitly deferred" sections of the implementation plans referenced in
-`docs/` and each numbered ADR's own Follow-up section.
+Authentication on the WebSocket gateway and every device/subject-facing REST
+route (`docs/adr/010-clinician-authentication.md`'s named scope limit); 3 of
+4 TRD scale-calibration methods (only `subject_specific` is implemented —
+`docs/adr/008`); a trained ST-GCN/TCN checkpoint (the models run, but on
+random weights — never safety-relevant, `docs/adr/005`); task-specific
+object/workstation classification; real multi-device benchmarking; FHIR
+mapping; message-bus-backed frame streaming; production-grade security (TLS,
+encryption at rest, dependency vulnerability scanning); and — categorically,
+not just "not yet" — any actual clinical trial data, ethics approval, or
+regulatory clearance (`docs/adr/011-phase4-5-readiness-scaffolding-scope.md`
+explains why those three specifically cannot be produced by a coding
+session, and what real software/documentation was built around them
+instead). See the "Explicitly deferred" sections of the implementation
+plans referenced in `docs/` and each numbered ADR's own Follow-up section.

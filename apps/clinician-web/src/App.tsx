@@ -2,8 +2,10 @@ import { Link, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { RequireAuth } from "./auth/RequireAuth";
 import { LogoutButton } from "./components/LogoutButton";
+import { AdverseEventsPage } from "./pages/AdverseEventsPage";
 import { AuditLogPage } from "./pages/AuditLogPage";
 import { LoginPage } from "./pages/LoginPage";
+import { PilotMetricsPage } from "./pages/PilotMetricsPage";
 import { SessionDetailPage } from "./pages/SessionDetailPage";
 import { SessionQueuePage } from "./pages/SessionQueuePage";
 
@@ -13,6 +15,8 @@ function HeaderNav() {
   return (
     <nav className="app-shell__nav">
       <Link to="/">Sessions</Link>
+      <Link to="/pilot-metrics">Pilot monitoring</Link>
+      <Link to="/adverse-events">Adverse events</Link>
       <Link to="/audit-log">Audit log</Link>
     </nav>
   );
@@ -61,6 +65,22 @@ export function App() {
               element={
                 <RequireAuth>
                   <AuditLogPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/pilot-metrics"
+              element={
+                <RequireAuth>
+                  <PilotMetricsPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/adverse-events"
+              element={
+                <RequireAuth>
+                  <AdverseEventsPage />
                 </RequireAuth>
               }
             />

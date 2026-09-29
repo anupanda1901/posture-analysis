@@ -1,6 +1,13 @@
 import { clearToken, getToken } from "../auth/tokenStore";
 import { BACKEND_API_URL } from "./config";
-import type { AuditLogEntryRecord, EventRecord, ExposureSummary, SessionRecord } from "./types";
+import type {
+  AdverseEventRecord,
+  AuditLogEntryRecord,
+  EventRecord,
+  ExposureSummary,
+  PilotMetricsSummary,
+  SessionRecord,
+} from "./types";
 
 class UnauthorizedError extends Error {
   constructor() {
@@ -63,4 +70,20 @@ export function getExposureSummary(sessionId: string): Promise<ExposureSummary> 
 export function listAuditLog(limit?: number): Promise<AuditLogEntryRecord[]> {
   const query = limit ? `?limit=${limit}` : "";
   return getJson<AuditLogEntryRecord[]>(`/audit-log${query}`);
+}
+
+/** GET /pilot-metrics - aggregate safety-monitoring metrics (docs/phase4/safety-monitoring-plan.md). Clinician-only. */
+export function getPilotMetrics(): Promise<PilotMetricsSummary> {
+  return getJson<PilotMetricsSummary>("/pilot-metrics");
+}
+
+/**
+ * GET /adverse-events - clinical-trial adverse event documentation
+ * (docs/phase4/safety-monitoring-plan.md). Clinician-only. Read-only here by
+ * design (App.tsx) - creating a report stays API-only, same as every other
+ * mutating action this dashboard deliberately doesn't surface.
+ */
+export function listAdverseEvents(seriousOnly?: boolean): Promise<AdverseEventRecord[]> {
+  const query = seriousOnly ? "?seriousOnly=true" : "";
+  return getJson<AdverseEventRecord[]>(`/adverse-events${query}`);
 }

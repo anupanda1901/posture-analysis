@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { clearToken, setToken } from "../auth/tokenStore";
-import { getExposureSummary, getSession, listAuditLog, listEvents, listSessions, login } from "./client";
+import {
+  getExposureSummary,
+  getPilotMetrics,
+  getSession,
+  listAdverseEvents,
+  listAuditLog,
+  listEvents,
+  listSessions,
+  login,
+} from "./client";
 
 function mockFetchOnce(body: unknown, ok = true, status = 200) {
   vi.stubGlobal(
@@ -101,5 +110,23 @@ describe("api client", () => {
     mockFetchOnce([]);
     await listAuditLog(50);
     expect(fetch).toHaveBeenCalledWith("http://localhost:3000/audit-log?limit=50", { headers: {} });
+  });
+
+  it("getPilotMetrics hits GET /pilot-metrics", async () => {
+    mockFetchOnce({});
+    await getPilotMetrics();
+    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/pilot-metrics", { headers: {} });
+  });
+
+  it("listAdverseEvents hits GET /adverse-events with no query by default", async () => {
+    mockFetchOnce([]);
+    await listAdverseEvents();
+    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/adverse-events", { headers: {} });
+  });
+
+  it("listAdverseEvents passes seriousOnly as a query param", async () => {
+    mockFetchOnce([]);
+    await listAdverseEvents(true);
+    expect(fetch).toHaveBeenCalledWith("http://localhost:3000/adverse-events?seriousOnly=true", { headers: {} });
   });
 });
