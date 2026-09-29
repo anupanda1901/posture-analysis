@@ -1,5 +1,8 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { Roles } from "../auth/roles.decorator";
+import { RolesGuard } from "../auth/roles.guard";
 import { EventsService } from "../events/events.service";
 import { MlClientService } from "../ml-integration/ml-client.service";
 import { SafetyService } from "../safety/safety.service";
@@ -24,8 +27,11 @@ export class SessionsController {
   /**
    * Review queue for apps/clinician-web: ?state=Pause or ?state=ClinicianReview
    * surfaces sessions actually waiting on a clinician; omitted lists recent
-   * sessions across all states.
+   * sessions across all states. Clinician-only (docs/adr/010) - every session's
+   * subjectPseudoId and safety state is real subject data.
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("clinician")
   @Get()
   list(@Query("state") state?: string, @Query("limit") limit?: string) {
     const parsedLimit = limit ? Number(limit) : undefined;
@@ -35,6 +41,8 @@ export class SessionsController {
     });
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("clinician")
   @Get(":id")
   get(@Param("id") id: string) {
     return this.sessions.get(id);

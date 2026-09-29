@@ -3,11 +3,18 @@ import { Reflector } from "@nestjs/core";
 import { ROLES_KEY, Role } from "./roles.decorator";
 
 /**
- * Phase 0 scaffold only: reads an `x-role` header, no real identity/session
- * verification. Real auth (PRD 2.4: least-privilege roles, tenant isolation,
- * worker-population manager/clinician separation) is explicitly deferred - see
- * docs/consent-and-retention.md "Worker-population access control (deferred)".
- * Do not rely on this guard for anything beyond local development.
+ * Checks `request.user.role` against `@Roles(...)` metadata. `request.user`
+ * is only populated by JwtAuthGuard verifying a real signed token - this
+ * guard has nothing trustworthy to check unless JwtAuthGuard ran first
+ * (`@UseGuards(JwtAuthGuard, RolesGuard)`, in that order). This replaces the
+ * Phase 0 scaffold that trusted a client-supplied `x-role` header -
+ * see docs/adr/010-clinician-authentication.md.
+ *
+ * Full least-privilege/tenant-isolation role modeling (PRD 2.4,
+ * worker-population manager/clinician separation - see
+ * docs/consent-and-retention.md) is still not built: today there is exactly
+ * one non-subject role (`clinician`), assigned at account creation with no
+ * per-tenant scoping.
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -21,7 +28,7 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     const request = context.switchToHttp().getRequest();
-    const role = request.headers["x-role"];
-    return requiredRoles.includes(role);
+    const role: string | undefined = request.user?.role;
+    return !!role && requiredRoles.includes(role as Role);
   }
 }

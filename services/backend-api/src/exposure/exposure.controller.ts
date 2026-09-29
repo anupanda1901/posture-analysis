@@ -1,4 +1,7 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { Roles } from "../auth/roles.decorator";
+import { RolesGuard } from "../auth/roles.guard";
 import { PrismaService } from "../common/prisma.service";
 
 interface ExposureEventPayload {
@@ -7,7 +10,9 @@ interface ExposureEventPayload {
   totalWindowSeconds: number;
 }
 
-/** The "clinician review" surface for exposure data - a queryable API, no dashboard UI (deferred). */
+/** The "clinician review" surface for exposure data, now backed by apps/clinician-web. Clinician-only (docs/adr/010). */
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("clinician")
 @Controller("sessions/:sessionId/exposure")
 export class ExposureController {
   constructor(private readonly prisma: PrismaService) {}

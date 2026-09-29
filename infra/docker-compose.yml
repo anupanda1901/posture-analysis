@@ -52,6 +52,9 @@ services:
       DATABASE_URL: postgresql://beaive:beaive_dev_password@postgres:5432/beaive
       ML_SERVICE_URL: http://ml-service:8000
       PORT: "3000"
+      # Dev-only default - never reuse this outside a disposable local stack
+      # (docs/adr/010-clinician-authentication.md). Override via a real .env.
+      JWT_SECRET: ${JWT_SECRET:-dev-only-insecure-secret-do-not-use-in-any-shared-environment}
     ports:
       - "3000:3000"
     depends_on:

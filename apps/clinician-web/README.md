@@ -13,18 +13,25 @@ escalation) remain API-only.
 
 ## Security - read before pointing this at anything real
 
-**There is no authentication or authorization anywhere in this app or in the
-backend-api it talks to.** Anyone who can load this page and reach
-backend-api's origin can see every session's `subjectPseudoId`, safety state,
-symptom reports, and exposure data. This is acceptable for local development
-against synthetic/test data only. See
-`docs/adr/009-clinician-web-trust-model.md` for the full rationale and the
-required follow-up before this touches real subject data.
+Every REST call this app makes requires a clinician login
+(`docs/adr/010-clinician-authentication.md`) - there is no self-service
+signup; create an account with
+`services/backend-api/scripts/seed-clinician.ts` first. **What login does
+NOT cover:** live updates over the Socket.IO gateway, and every
+device/subject-facing backend-api route (session creation, frame ingestion,
+sensor readings, etc.) - those remain open to anyone who can reach
+backend-api's origin. See `docs/adr/009-clinician-web-trust-model.md` for
+the full picture of what's fixed and what isn't before this touches real
+subject data.
+
+The JWT is kept in `sessionStorage` (cleared when the tab closes, never sent
+anywhere but this app's own `fetch` calls) - see `src/auth/tokenStore.ts`.
 
 ## Running locally
 
 ```sh
-npm run web:dev   # from the repo root; proxies to backend-api at http://localhost:3000
+# from the repo root, once a clinician account exists (see Security above)
+npm run web:dev   # proxies to backend-api at http://localhost:3000
 ```
 
 Point at a different backend-api instance with a `.env` file:
@@ -35,8 +42,12 @@ VITE_BACKEND_API_URL=http://localhost:3000
 
 ## Structure
 
-- `src/api/` - `client.ts` (REST calls), `socket.ts` (Socket.IO connection,
-  same room convention as `apps/ios-client`'s `SessionWebSocketClient`),
+- `src/auth/` - `tokenStore.ts` (the JWT's one source of truth, shared by
+  the API client and React state), `AuthContext.tsx` (`useAuth()`),
+  `RequireAuth.tsx` (route guard, redirects to `/login`).
+- `src/api/` - `client.ts` (REST calls, attaches the bearer token), `socket.ts`
+  (Socket.IO connection, same room convention as `apps/ios-client`'s
+  `SessionWebSocketClient` - not gated by login, see Security above),
   `types.ts` (hand-kept types mirroring `packages/schemas/src/*.schema.json`
   - see `docs/adr/004-ios-dtos-hand-kept.md` for why hand-keeping is the
   deliberate choice here too, not an oversight).

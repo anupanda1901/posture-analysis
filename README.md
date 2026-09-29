@@ -14,9 +14,11 @@ sample data.
   results returned by the server. **Unverified** — no Swift toolchain in this repo's
   build environment; see `apps/ios-client/README.md`.
 - `apps/clinician-web/` — read-only web dashboard for clinician review: session queue,
-  safety state, exposure summary, and the full event timeline, with live updates. Has
-  no authentication — see `docs/adr/009-clinician-web-trust-model.md` before pointing
-  it at anything but local/synthetic data.
+  safety state, exposure summary, and the full event timeline, with live updates.
+  Its REST calls require clinician login (`docs/adr/010-clinician-authentication.md`);
+  live WebSocket updates and every device/subject-facing endpoint remain
+  unauthenticated — see `docs/adr/009-clinician-web-trust-model.md` for what's
+  covered and what isn't before pointing this at anything but local/synthetic data.
 - `services/backend-api/` — NestJS service owning session lifecycle, the protocol/plan
   store, the append-only event log, the deterministic safety/policy engine (never
   gated by unvalidated ML output — `docs/adr/005-deterministic-policy-engine.md`), and
@@ -55,9 +57,17 @@ npm run backend:test
 # 6. Run ml-service tests (includes the quality-gate fixture smoke tests)
 cd services/ml-service && pytest
 
-# 7. Run the clinician dashboard against backend-api on :3000
+# 7. Create a clinician account (required for apps/clinician-web to log in -
+#    docs/adr/010-clinician-authentication.md; no self-service signup exists)
+cd services/backend-api && npx ts-node scripts/seed-clinician.ts <username> <password>
+
+# 8. Run the clinician dashboard against backend-api on :3000
 npm run web:dev
 ```
+
+Set `JWT_SECRET` in backend-api's environment before running anywhere but a
+disposable local sandbox — without it, a hardcoded, publicly-known dev secret
+is used and logged as a warning (see `services/backend-api/src/auth/auth.module.ts`).
 
 The iOS client (`apps/ios-client/`) is a Swift Package / Xcode project scaffold; open
 it in Xcode to build. It expects `services/backend-api` reachable at the URL configured

@@ -1,4 +1,8 @@
 import { Route, Routes } from "react-router-dom";
+import { AuthProvider } from "./auth/AuthContext";
+import { RequireAuth } from "./auth/RequireAuth";
+import { LogoutButton } from "./components/LogoutButton";
+import { LoginPage } from "./pages/LoginPage";
 import { SessionDetailPage } from "./pages/SessionDetailPage";
 import { SessionQueuePage } from "./pages/SessionQueuePage";
 
@@ -7,21 +11,41 @@ import { SessionQueuePage } from "./pages/SessionQueuePage";
  * previously just a queryable API with no UI, per the Phase 2/3 plan's
  * deferred list). Read-only: this app never writes to a session - all
  * mutating actions (clinician-approved resume, escalation) remain
- * API-only/future work; see README.md and docs/adr/009-clinician-web-trust-model.md
- * for the current no-auth trust model this runs under.
+ * API-only/future work. Its REST calls require clinician login
+ * (docs/adr/010-clinician-authentication.md); see README.md and
+ * docs/adr/009-clinician-web-trust-model.md for what that login does and
+ * doesn't cover (live WebSocket updates are not gated by it).
  */
 export function App() {
   return (
-    <div className="app-shell">
-      <header className="app-shell__header">
-        <h1 className="app-shell__title">beAIve clinician review</h1>
-      </header>
-      <main className="app-shell__main">
-        <Routes>
-          <Route path="/" element={<SessionQueuePage />} />
-          <Route path="/sessions/:sessionId" element={<SessionDetailPage />} />
-        </Routes>
-      </main>
-    </div>
+    <AuthProvider>
+      <div className="app-shell">
+        <header className="app-shell__header">
+          <h1 className="app-shell__title">beAIve clinician review</h1>
+          <LogoutButton />
+        </header>
+        <main className="app-shell__main">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <SessionQueuePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/sessions/:sessionId"
+              element={
+                <RequireAuth>
+                  <SessionDetailPage />
+                </RequireAuth>
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </AuthProvider>
   );
 }

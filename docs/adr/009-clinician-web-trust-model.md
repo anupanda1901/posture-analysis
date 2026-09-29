@@ -1,7 +1,9 @@
 # ADR-009: apps/clinician-web has no authentication/authorization this phase
 
 ## Status
-Accepted (Phase 2/3 engineering scaffolding follow-on)
+Partially superseded by ADR-010 (see "Update" below) — accepted as
+originally written for the REST calls ADR-010 does not cover, and for the
+WebSocket gateway.
 
 ## Context
 `apps/clinician-web` is a new read-only dashboard (session queue + session
@@ -51,3 +53,17 @@ of dashboard views (who looked at which subject's session, when). None of
 this should be half-implemented (e.g. a login screen with no real backend
 check) — that would be worse than the current explicit no-auth state, because
 it would look secured without being secured.
+
+## Update (ADR-010)
+
+Real JWT-based clinician login now gates the specific REST routes
+`clinician-web` reads (`GET /sessions`, `GET /sessions/:id`,
+`GET /sessions/:id/events`, `GET /sessions/:id/exposure/*`) — see
+`docs/adr/010-clinician-authentication.md` for the full design and its own,
+narrower, explicitly-stated scope. **Still true as originally written
+here:** every device/subject-facing REST route and the Socket.IO gateway
+remain unauthenticated — `clinician-web`'s live updates over that gateway
+are not gated by the login this ADR's follow-up asked for. Audit logging
+and token revocation also remain unimplemented. Treat this ADR's original
+"never for anything touching real subject data" warning as still in force
+for those unfixed paths.

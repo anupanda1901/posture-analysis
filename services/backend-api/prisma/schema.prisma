@@ -75,3 +75,15 @@ model ProtocolVersion {
 
   @@unique([protocolKey, version])
 }
+
+// Real clinician identity/auth (docs/adr/010-clinician-authentication.md),
+// replacing the Phase 0 RolesGuard's `x-role` header placeholder. No
+// self-service signup this phase - accounts are created via
+// scripts/seed-clinician.ts, run by whoever operates the deployment.
+model Clinician {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("clinician")
+  createdAt    DateTime @default(now())
+}
