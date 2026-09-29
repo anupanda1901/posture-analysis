@@ -46,6 +46,21 @@ export class SessionsService {
     return this.prisma.session.findUniqueOrThrow({ where: { id } });
   }
 
+  /**
+   * The clinician dashboard's review queue (apps/clinician-web). Optionally
+   * filtered to a single safety-FSM `state` (e.g. `Pause`/`ClinicianReview`)
+   * so a clinician can find sessions that actually need attention without
+   * scanning every session. Ordered most-recent-first; capped at `limit` -
+   * this is a review queue, not a full audit export.
+   */
+  async list(options: { state?: string; limit?: number } = {}) {
+    return this.prisma.session.findMany({
+      where: options.state ? { state: options.state } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: options.limit ?? 100,
+    });
+  }
+
   async setHeight(id: string, subjectHeightMeters: number) {
     await this.prisma.session.update({ where: { id }, data: { subjectHeightMeters } });
     return this.get(id);

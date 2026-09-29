@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
 import { EventsService } from "../events/events.service";
 import { MlClientService } from "../ml-integration/ml-client.service";
@@ -19,6 +19,20 @@ export class SessionsController {
   @Post()
   create(@Body() body: CreateSessionInput) {
     return this.sessions.create(body);
+  }
+
+  /**
+   * Review queue for apps/clinician-web: ?state=Pause or ?state=ClinicianReview
+   * surfaces sessions actually waiting on a clinician; omitted lists recent
+   * sessions across all states.
+   */
+  @Get()
+  list(@Query("state") state?: string, @Query("limit") limit?: string) {
+    const parsedLimit = limit ? Number(limit) : undefined;
+    return this.sessions.list({
+      state,
+      limit: parsedLimit && Number.isFinite(parsedLimit) ? parsedLimit : undefined,
+    });
   }
 
   @Get(":id")

@@ -11,10 +11,16 @@ sample data.
 
 - `apps/ios-client/` — native iOS (Swift/SwiftUI) capture + display front end. No AI
   inference runs on-device in this phase; it streams frames to the backend and renders
-  results returned by the server.
+  results returned by the server. **Unverified** — no Swift toolchain in this repo's
+  build environment; see `apps/ios-client/README.md`.
+- `apps/clinician-web/` — read-only web dashboard for clinician review: session queue,
+  safety state, exposure summary, and the full event timeline, with live updates. Has
+  no authentication — see `docs/adr/009-clinician-web-trust-model.md` before pointing
+  it at anything but local/synthetic data.
 - `services/backend-api/` — NestJS service owning session lifecycle, the protocol/plan
-  store, the append-only event log, the deterministic safety state machine, and the
-  iOS-facing REST/WebSocket API.
+  store, the append-only event log, the deterministic safety/policy engine (never
+  gated by unvalidated ML output — `docs/adr/005-deterministic-policy-engine.md`), and
+  the iOS/web-facing REST/WebSocket API.
 - `services/ml-service/` — Python/FastAPI service running pose estimation (MediaPipe),
   geometry/kinematics, and quality gating. This is where "the AI" runs.
 - `packages/schemas/` — single source of truth (JSON Schema) for every canonical
@@ -48,6 +54,9 @@ npm run backend:test
 
 # 6. Run ml-service tests (includes the quality-gate fixture smoke tests)
 cd services/ml-service && pytest
+
+# 7. Run the clinician dashboard against backend-api on :3000
+npm run web:dev
 ```
 
 The iOS client (`apps/ios-client/`) is a Swift Package / Xcode project scaffold; open
@@ -73,7 +82,12 @@ substitute for the manual review the doc describes.
 
 ## What is deliberately not here yet
 
-ARKit anchor fusion, YOLO/ST-GCN/TCN models, real multi-device benchmarking, a
-clinician dashboard UI, FHIR mapping, message-bus-backed frame streaming, and any
-clinical trial or regulatory submission material. See the "Explicitly deferred"
-section of the implementation plan referenced in `docs/`.
+Authentication/authorization on backend-api or `apps/clinician-web`
+(`docs/adr/009-clinician-web-trust-model.md`); 3 of 4 TRD scale-calibration
+methods (only `subject_specific` is implemented — `docs/adr/008`); a trained
+ST-GCN/TCN checkpoint (the models run, but on random weights — never safety-
+relevant, `docs/adr/005`); task-specific object/workstation classification;
+real multi-device benchmarking; FHIR mapping; message-bus-backed frame
+streaming; and any clinical trial or regulatory submission material. See the
+"Explicitly deferred" sections of the implementation plans referenced in
+`docs/` and each numbered ADR's own Follow-up section.

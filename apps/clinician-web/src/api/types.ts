@@ -1,0 +1,85 @@
+// Hand-kept, not generated - same rationale as apps/ios-client/Sources/Networking/DTOs
+// (docs/adr/004-ios-dtos-hand-kept.md): this dashboard only reads a handful of
+// fields per record, so a third codegen target isn't worth it yet. Each type
+// below is commented with the canonical schema it mirrors
+// (packages/schemas/src/*.schema.json) so drift is at least detectable by
+// inspection.
+
+/** services/backend-api/src/safety/safety-state-machine.ts */
+export type SafetyState = "Setup" | "Observing" | "CueEligible" | "Pause" | "Unavailable" | "ClinicianReview";
+
+/** Prisma `Session` model (services/backend-api/prisma/schema.prisma) */
+export interface SessionRecord {
+  id: string;
+  subjectPseudoId: string;
+  protocolId: string;
+  protocolVersion: string;
+  deploymentContext: "clinic_supervised" | "home_rehab";
+  consentRecordId: string;
+  calibrationRef: string | null;
+  subjectHeightMeters: number | null;
+  state: SafetyState;
+  createdAt: string;
+}
+
+/** Append-only `Event` row (services/backend-api/prisma/schema.prisma) */
+export interface EventRecord {
+  id: string;
+  sessionId: string;
+  type: string;
+  schemaId: string;
+  payload: unknown;
+  createdAt: string;
+}
+
+/** decision-event.schema.json */
+export interface DecisionEventPayload {
+  decisionEventId: string;
+  sessionId: string;
+  evaluatedAt: string;
+  evidence: Array<{ type: string; refId: string; summary?: string }>;
+  rule: { ruleId: string; ruleVersion: string; description: string };
+  action: "no_action" | "cue" | "escalate_review" | "measurement_unavailable";
+  cuePayload: unknown | null;
+  version: string;
+  expiry: string;
+}
+
+/** quality-gate-flag.schema.json */
+export interface QualityGateFlagPayload {
+  flagId: string;
+  state: "supported" | "unsupported";
+  reasons: string[];
+}
+
+/** symptom-report.schema.json */
+export interface SymptomReportPayload {
+  symptomReportId: string;
+  sessionId: string;
+  reportedAt: string;
+  symptoms: string[];
+  severity?: string;
+  freeText?: string;
+}
+
+/** exposure-event.schema.json */
+export interface ExposureEventPayload {
+  exposureEventId: string;
+  sessionId: string;
+  postureBucket: string;
+  windowStartAt: string;
+  windowEndAt: string;
+  validSeconds: number;
+  totalWindowSeconds: number;
+}
+
+/** movement-phase-event.schema.json - descriptive only, never safety-relevant (ADR-005) */
+export interface MovementPhaseEventPayload {
+  movementPhaseEventId: string;
+  sessionId: string;
+  predictedPhase: string;
+  phaseConfidence: number;
+  validated: false;
+}
+
+export type ExposureSummary = Record<string, { validSeconds: number; totalWindowSeconds: number }>;
